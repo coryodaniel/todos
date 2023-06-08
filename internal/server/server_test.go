@@ -5,50 +5,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/coryodaniel/todo/internal/server"
 	"github.com/coryodaniel/todo/pkg/todo"
 )
 
-type StubTodoStore struct {
-	todos map[string]todo.Item
-}
-
-func (s *StubTodoStore) GetTodo(id string) *todo.Item {
-	item, ok := s.todos[id]
-	if ok {
-		return &item
-	}
-
-	return nil
-}
-
-func (s *StubTodoStore) CreateTodo(params *todo.Item) (*todo.Item, error) {
-	var item todo.Item = *params
-	id := strconv.Itoa(len(s.todos))
-	item.ID = id
-
-	s.todos[id] = item
-	return &item, nil
-}
-
-func (s *StubTodoStore) ListTodos() *[]todo.Item {
-	items := []todo.Item{}
-	for _, item := range s.todos {
-		items = append(items, item)
-	}
-
-	return &items
-}
-
 func TestPOSTTodo(t *testing.T) {
-	store := StubTodoStore{
-		map[string]todo.Item{},
-	}
+	store := server.NewMemoryStore()
 
-	todoServer := &server.TodoServer{Store: &store}
+	todoServer := &server.TodoServer{Store: store}
 
 	t.Run("it creates a todo", func(t *testing.T) {
 		item := todo.Item{Title: "Mow yard"}
@@ -74,21 +40,18 @@ func TestPOSTTodo(t *testing.T) {
 			t.Errorf("wrong todo item returned, got %s want %s", got, want)
 		}
 
-		if len(store.todos) != 1 {
-			t.Errorf("got %d todos, wanted %d", len(store.todos), 1)
+		if len(*store.ListTodos()) != 1 {
+			t.Errorf("got %d todos, wanted %d", len(*store.ListTodos()), 1)
 		}
 	})
 }
 
 func TestGETTodo(t *testing.T) {
-	store := StubTodoStore{
-		map[string]todo.Item{
-			"1": {Title: "Feed dog"},
-			"2": {Title: "Wash dishes"},
-		},
-	}
+	store := server.NewMemoryStore()
+	store.CreateTodo(&todo.Item{Title: "Feed dog"})
+	store.CreateTodo(&todo.Item{Title: "Wash dishes"})
 
-	todoServer := &server.TodoServer{Store: &store}
+	todoServer := &server.TodoServer{Store: store}
 
 	t.Run("returns all todo items", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/api/todos/", nil)
@@ -148,4 +111,40 @@ func TestGETTodo(t *testing.T) {
 			t.Errorf("did not get correct status, got %d, want %d", response.Code, http.StatusNotFound)
 		}
 	})
+}
+
+func TestCreateAndListTodos(t *testing.T) {
+	store := server.NewMemoryStore()
+	todoServer := server.TodoServer{Store: store}
+
+	item := todo.Item{Title: "Mow yard"}
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(&item)
+
+	postReq, _ := http.NewRequest(http.MethodPost, "/api/todos/", b)
+	todoServer.ServeHTTP(httptest.NewRecorder(), postReq)
+
+	postReq, _ = http.NewRequest(http.MethodPost, "/api/todos/", b)
+	todoServer.ServeHTTP(httptest.NewRecorder(), postReq)
+
+	postReq, _ = http.NewRequest(http.MethodPost, "/api/todos/", b)
+	todoServer.ServeHTTP(httptest.NewRecorder(), postReq)
+
+	getReq, _ := http.NewRequest(http.MethodGet, "/api/todos/", b)
+	response := httptest.NewRecorder()
+	todoServer.ServeHTTP(response, getReq)
+
+	result := []map[string]interface{}{}
+	json.Unmarshal(response.Body.Bytes(), &result)
+
+	got := len(result)
+	want := 3
+
+	if response.Code != http.StatusOK {
+		t.Errorf("did not get correct status, got %d, want %d", response.Code, http.StatusOK)
+	}
+
+	if got != want {
+		t.Errorf("number of results is wrong, got %d want %d", got, want)
+	}
 }

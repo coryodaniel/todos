@@ -3,17 +3,12 @@ package server
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/coryodaniel/todo/pkg/todo"
 )
-
-type TodoStore interface {
-	GetTodo(id string) *todo.Item
-	CreateTodo(params *todo.Item) (*todo.Item, error)
-	ListTodos() *[]todo.Item
-}
 
 type TodoServer struct {
 	Store TodoStore
@@ -29,6 +24,7 @@ func (t *TodoServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TodoServer) getTodo(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[GET] %s\n", r.URL.Path)
 	todoId := strings.TrimPrefix(r.URL.Path, "/api/todos/")
 
 	if todoId == "" {
@@ -50,6 +46,7 @@ func (t *TodoServer) getTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TodoServer) createTodo(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[POST] %s\n", r.URL.Path)
 	var params todo.Item
 	body, _ := ioutil.ReadAll(r.Body)
 	_ = json.Unmarshal(body, &params)
