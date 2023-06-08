@@ -12,12 +12,6 @@ type TodoStore interface {
 	ListTodos() *[]todo.Item
 }
 
-func NewMemoryStoreWithRecords(records map[string]todo.Item) *MemoryStore {
-	return &MemoryStore{
-		todos: records,
-	}
-}
-
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
 		todos: map[string]todo.Item{},
