@@ -14,6 +14,13 @@ type API struct {
 	BaseURL string
 }
 
+func NewClient(url string) *API {
+	return &API{
+		Client:  http.DefaultClient,
+		BaseURL: url,
+	}
+}
+
 func (api *API) CreateTodo(title string) (*todo.Item, error) {
 	params := map[string]string{"title": title}
 	reqJson, _ := json.Marshal(params)

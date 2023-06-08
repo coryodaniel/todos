@@ -13,7 +13,7 @@ func NewServerCommand() *ServerCommand {
 		fs: flag.NewFlagSet("server", flag.ContinueOnError),
 	}
 
-	sc.fs.StringVar(&sc.addr, "addr", ":3333", "Host address & port to listen on. Format hostname:port")
+	sc.fs.StringVar(&sc.addr, "addr", ":5555", "Host address & port to listen on. Format hostname:port")
 
 	return sc
 }
@@ -23,7 +23,7 @@ type ServerCommand struct {
 	addr string
 }
 
-// Name of the subcommand
+// Name of this subcommand
 func (s *ServerCommand) Name() string {
 	return s.fs.Name()
 }

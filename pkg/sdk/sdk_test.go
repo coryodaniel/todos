@@ -33,13 +33,10 @@ func TestAddTodo(t *testing.T) {
 
 	assertEquals(t, gotItem.Title, "Buy hotdogs")
 	assertEquals(t, gotItem.ID, "1")
-
 }
 
 func TestListTodos(t *testing.T) {
-	wantItems := []todo.Item{
-		{Title: "Wash dog"},
-	}
+	wantItems := []todo.Item{{Title: "Wash dog"}}
 
 	mockServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		assertEquals(t, req.URL.String(), "/api/todos/")

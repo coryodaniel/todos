@@ -29,6 +29,7 @@ type Runner interface {
 func Execute(args []string) error {
 	cmds := []Runner{
 		NewServerCommand(),
+		NewClientCommand(),
 	}
 
 	if len(args) < 1 {
