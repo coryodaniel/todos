@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -11,6 +12,26 @@ import (
 type API struct {
 	Client  *http.Client
 	BaseURL string
+}
+
+func (api *API) CreateTodo(title string) (*todo.Item, error) {
+	params := map[string]string{"title": title}
+	reqJson, _ := json.Marshal(params)
+	reqBody := bytes.NewBuffer(reqJson)
+
+	resp, err := api.Client.Post(api.BaseURL+"/api/todos/", "application/json", reqBody)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	item := todo.Item{}
+	json.Unmarshal(body, &item)
+
+	return &item, err
+
 }
 
 func (api *API) ListTodos() (*[]todo.Item, error) {

@@ -2,6 +2,7 @@ package sdk_test
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,6 +13,26 @@ import (
 )
 
 func TestAddTodo(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assertEquals(t, req.URL.String(), "/api/todos/")
+
+		item := todo.Item{}
+		body, _ := io.ReadAll(req.Body)
+		json.Unmarshal(body, &item)
+		item.ID = "1"
+
+		// Send response to be tested
+		resp, _ := json.Marshal(&item)
+		rw.Write(resp)
+	}))
+
+	defer mockServer.Close()
+
+	api := sdk.API{mockServer.Client(), mockServer.URL}
+	gotItem, _ := api.CreateTodo("Buy hotdogs")
+
+	assertEquals(t, gotItem.Title, "Buy hotdogs")
+	assertEquals(t, gotItem.ID, "1")
 
 }
 
@@ -33,17 +54,17 @@ func TestListTodos(t *testing.T) {
 	api := sdk.API{mockServer.Client(), mockServer.URL}
 	gotItems, _ := api.ListTodos()
 
-	assertDeepEquals(t, &wantItems, gotItems)
+	assertDeepEquals(t, gotItems, &wantItems)
 }
 
-func assertDeepEquals(t testing.TB, want any, got any) {
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("expected %v, got %v", want, got)
+func assertDeepEquals(t testing.TB, got any, want any) {
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, expected %v", got, want)
 	}
 }
 
-func assertEquals(t testing.TB, want string, got string) {
-	if want != got {
-		t.Errorf("expected %v, got %v", want, got)
+func assertEquals(t testing.TB, got string, want string) {
+	if got != want {
+		t.Errorf("got %v, expected %v, ", got, want)
 	}
 }
