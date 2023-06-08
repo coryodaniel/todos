@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,13 +11,20 @@ import (
 	"github.com/coryodaniel/todo/pkg/todo"
 )
 
-type InMemoryTodoStore struct{}
-
-func (i *InMemoryTodoStore) GetTodo(id string) *todo.Task {
-	return &todo.Task{}
+type InMemoryTodoStore struct {
 }
 
-func (i *InMemoryTodoStore) CreateTodo(id string) {}
+func (i *InMemoryTodoStore) GetTodo(id string) *todo.Item {
+	return &todo.Item{}
+}
+
+func (i *InMemoryTodoStore) CreateTodo(params *todo.Item) (*todo.Item, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (i *InMemoryTodoStore) ListTodos() *[]todo.Item {
+	return &[]todo.Item{}
+}
 
 func main() {
 	addr := ":3333"
