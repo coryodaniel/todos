@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"strings"
@@ -45,13 +46,17 @@ func (c *ClientCommand) Run() error {
 			fmt.Printf("- %s [%s]\n", t.Title, t.ID)
 		}
 
-	case "create":
+	case "new":
 		title := strings.Join(c.fs.Args()[1:], " ")
 		todo, _ := todoClient.CreateTodo(title)
 
 		fmt.Printf("Added todo: %s [%s]\n", todo.Title, todo.ID)
 	default:
-		return fmt.Errorf("unknown subcommand: %s", subcommand)
+		errMsg := fmt.Sprintf("unknown command: todo client %s`\n", subcommand)
+		errMsg = errMsg + "Valid commands:\n- todo client list\n- todo client new"
+
+		return errors.New(errMsg)
+
 	}
 
 	return nil

@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
 
 	"github.com/coryodaniel/todo/internal/server"
 )
@@ -34,10 +32,5 @@ func (s *ServerCommand) Init(args []string) error {
 }
 
 func (s *ServerCommand) Run() error {
-	fmt.Printf("Started todo server on %s.\n", s.addr)
-
-	store := server.NewMemoryStore()
-	server := &server.TodoServer{Store: store}
-
-	return http.ListenAndServe(s.addr, server)
+	return server.NewServer(s.addr)
 }

@@ -14,7 +14,7 @@ import (
 func TestPOSTTodo(t *testing.T) {
 	store := server.NewMemoryStore()
 
-	todoServer := &server.TodoServer{Store: store}
+	todoServer := &server.TodoHandler{Store: store}
 
 	t.Run("it creates a todo", func(t *testing.T) {
 		item := todo.Item{Title: "Mow yard"}
@@ -51,7 +51,7 @@ func TestGETTodo(t *testing.T) {
 	store.CreateTodo(&todo.Item{Title: "Feed dog"})
 	store.CreateTodo(&todo.Item{Title: "Wash dishes"})
 
-	todoServer := &server.TodoServer{Store: store}
+	todoServer := &server.TodoHandler{Store: store}
 
 	t.Run("returns all todo items", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/api/todos/", nil)
@@ -115,7 +115,7 @@ func TestGETTodo(t *testing.T) {
 
 func TestCreateAndListTodos(t *testing.T) {
 	store := server.NewMemoryStore()
-	todoServer := server.TodoServer{Store: store}
+	todoServer := server.TodoHandler{Store: store}
 
 	item := todo.Item{Title: "Mow yard"}
 	b := new(bytes.Buffer)

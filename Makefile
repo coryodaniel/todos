@@ -1,11 +1,12 @@
 GOPATH?=${HOME}/go
-ADDR?=http://localhost:5555/api/todos/
+TODO_PORT?=5555
+TODO_URL?=http://localhost:${TODO_PORT}/api/todos/
 
 .PHONY: all
 all: clean fmt test build
 
 .PHONY: fmt
-fmt: 
+fmt:
 	go fmt
 
 .PHONY: test
@@ -26,7 +27,10 @@ docs:
 	${GOPATH}/bin/godoc -http=localhost:6060
 
 todos:
-	curl -X POST ${ADDR} -H 'Content-Type: application/json' -d '{"title":"Wash car"}'
+	./todo client new buy hat
+	./todo client new mow yard
+	./todo client new rake leaves
+	./todo client new feed dog
 
 start: build
-	./todo server -addr=":5555"
+	./todo server -addr=":${TODO_PORT}"
