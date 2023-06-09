@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-//go:embed static/*
+//go:embed assets/js/* assets/node_modules/*
 var assets embed.FS
 
 func NewServer(addr string) error {
@@ -15,40 +15,20 @@ func NewServer(addr string) error {
 
 	mux.Handle("/api/todos/", &TodoHandler{Store: NewMemoryStore()})
 
-	// mux.Handle("/assets/", assetsHandler())
+	mux.Handle("/assets/", assetsHandler())
 	mux.Handle("/", &AppHandler{})
 
 	return http.ListenAndServe(addr, mux)
 }
 
-// func assetsHandler() http.Handler {
-// 	getAllFilenames(&assets)
+func assetsHandler() http.Handler {
+	fs := http.FileServer(http.FS(assets))
+	return loggingHandler(http.StripPrefix("/", fs))
+}
 
-// 	fs := http.FileServer(http.FS(assets))
-
-// 	return loggingHandler(http.StripPrefix("/", fs))
-// }
-
-// func loggingHandler(h http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		log.Println(r.Method, r.URL.Path)
-// 		h.ServeHTTP(w, r)
-// 	})
-// }
-
-// func getAllFilenames(efs *embed.FS) (files []string, err error) {
-// 	if err := fs.WalkDir(efs, ".", func(path string, d fs.DirEntry, err error) error {
-// 		fmt.Printf("THe file name is: %s\n", path)
-// 		if d.IsDir() {
-// 			return nil
-// 		}
-
-// 		files = append(files, path)
-
-// 		return nil
-// 	}); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return files, nil
-// }
+func loggingHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, r.URL.Path)
+		h.ServeHTTP(w, r)
+	})
+}

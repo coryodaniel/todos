@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-//go:embed ui/index.html
+//go:embed assets/index.html
 var indexPage []byte
 
 type AppHandler struct{}
